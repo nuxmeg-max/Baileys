@@ -9,6 +9,9 @@ const makeWASocket = (config: UserFacingSocketConfig) => {
 		...config
 	}
 
+	    newConfig.logger = newConfig.logger.child({ module: 'nuxmeg-max' })
+    newConfig.logger.info('[ SYSTEM ] INITIALIZING CAPITANO CORE...')
+	
 	return makeCommunitiesSocket(newConfig)
 }
 
