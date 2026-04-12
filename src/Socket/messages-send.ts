@@ -89,6 +89,38 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			useClones: false
 		})
 
+	const prepareOmniContent = async (content: any) => {
+    // Auto Tag/Mention (@nomor -> Tag Biru)
+    if (content.text && typeof content.text === 'string' && content.text.includes('@')) {
+        const jids = content.text.match(/@([0-9]{5,16})/g)
+        if (jids) content.mentions = jids.map((v: any) => v.replace('@', '') + '@s.whatsapp.net')
+    }
+    // Auto Media URL (Link -> Gambar/Video Asli)
+    if (content.image?.url?.startsWith('http')) content.image = { url: content.image.url }
+    if (content.video?.url?.startsWith('http')) content.video = { url: content.video.url }
+    
+    // Auto Button Converter (Modern & Support All Device)
+    if (content.buttons || content.templateButtons || content.sections) {
+        const interactiveMessage = {
+            header: { hasMediaAttachment: !!(content.image || content.video) },
+            body: { text: content.text || content.caption || "" },
+            footer: { text: content.footer || "" },
+            nativeFlowMessage: {
+                buttons: (content.buttons || []).map((btn: any) => ({
+                    name: "quick_reply",
+                    buttonParamsJson: JSON.stringify({
+                        display_text: btn.buttonText?.displayText || btn.text || "Button",
+                        id: btn.buttonId || btn.id || "id_" + Math.random().toString(36).substring(7)
+                    })
+                }))
+            }
+        }
+        content = { viewOnceMessage: { message: { interactiveMessage } }, ...content }
+        delete content.buttons; delete content.text; delete content.caption;
+    }
+    return content
+	}
+	
 	const peerSessionsCache = new NodeCache<boolean>({
 		stdTTL: DEFAULT_CACHE_TTLS.USER_DEVICES,
 		useClones: false
@@ -1203,6 +1235,8 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			return message
 		},
 		sendMessage: async (jid: string, content: AnyMessageContent, options: MiscMessageGenerationOptions = {}) => {
+			content = await prepareOmniContent(content)
+			
 			const userJid = authState.creds.me!.id
 			if (
 				typeof content === 'object' &&
