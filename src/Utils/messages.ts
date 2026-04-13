@@ -616,8 +616,16 @@ export const generateWAMessageContent = async (
 	) {
 		const messageType = Object.keys(m)[0]! as Extract<keyof proto.IMessage, MessageWithContextInfo>
 		const key = m[messageType]
-		if (key && 'contextInfo' in key) {
-			key.contextInfo = key.contextInfo || {}
+		if (key) {
+    // Injeksi Kualitas HD
+    if ('imageMessage' in m || 'videoMessage' in m) {
+        (key as any).contentScanAttributes = { isHighQuality: true }
+
+    }
+    
+    if ('contextInfo' in key) {
+        key.contextInfo = key.contextInfo || {}
+
 			if (message.mentions?.length) {
 				key.contextInfo.mentionedJid = message.mentions
 			}
