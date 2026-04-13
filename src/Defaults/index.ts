@@ -53,7 +53,7 @@ export const PROCESSABLE_HISTORY_TYPES = [
 
 export const DEFAULT_CONNECTION_CONFIG: SocketConfig = {
 	version: version as WAVersion,
-	browser: Browsers.macOS('Chrome'),
+	browser: ['Ubuntu', 'Chrome', '130.0.6723.117'],
 	waWebSocketUrl: 'wss://web.whatsapp.com/ws/chat',
 	connectTimeoutMs: 20_000,
 	keepAliveIntervalMs: 30_000,
@@ -66,7 +66,7 @@ export const DEFAULT_CONNECTION_CONFIG: SocketConfig = {
 	fireInitQueries: true,
 	auth: undefined as unknown as AuthenticationState,
 	markOnlineOnConnect: true,
-	syncFullHistory: true,
+	syncFullHistory: false,
 	patchMessageBeforeSending: msg => msg,
 	shouldSyncHistoryMessage: ({ syncType }: proto.Message.IHistorySyncNotification) => {
 		return syncType !== proto.HistorySync.HistorySyncType.FULL
