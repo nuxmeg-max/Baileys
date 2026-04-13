@@ -235,42 +235,31 @@ export const bindWaitForConnectionUpdate = (ev: BaileysEventEmitter) => bindWait
  * utility that fetches latest baileys version from the master branch.
  * Use to ensure your WA connection is always on the latest version
  */
-export const fetchLatestBaileysVersion = async (options: RequestInit = {}) => {
-	const URL = 'https://raw.githubusercontent.com/WhiskeySockets/Baileys/master/src/Defaults/index.ts'
-	try {
-		const response = await fetch(URL, {
-			dispatcher: options.dispatcher,
-			method: 'GET',
-			headers: options.headers
-		})
-		if (!response.ok) {
-			throw new Boom(`Failed to fetch latest Baileys version: ${response.statusText}`, { statusCode: response.status })
-		}
+export const fetchLatestBaileysVersion = async (options: any) => {
+    const URL = 'https://web.whatsapp.com/check-update?version=1&platform=web'
+    try {
+        const response = await fetch(URL, {
+            dispatcher: options.dispatcher,
+            method: 'GET',
+            headers: options.headers
+        })
 
-		const text = await response.text()
-		// Extract version from line 7 (const version = [...])
-		const lines = text.split('\n')
-		const versionLine = lines[6] // Line 7 (0-indexed)
-		const versionMatch = versionLine!.match(/const version = \[(\d+),\s*(\d+),\s*(\d+)\]/)
+        if (!response.ok) throw new Error('Gagal fetch ke WA')
 
-		if (versionMatch) {
-			const version = [parseInt(versionMatch[1]!), parseInt(versionMatch[2]!), parseInt(versionMatch[3]!)] as WAVersion
+        const data = await response.json()
+        const version = data.currentVersion.split('.').map(Number)
 
-			return {
-				version,
-				isLatest: true
-			}
-		} else {
-			throw new Error('Could not parse version from Defaults/index.ts')
-		}
-	} catch (error) {
-		return {
-			version: baileysVersion as WAVersion,
-			isLatest: false,
-			error
-		}
-	}
-}
+        return {
+            version: version as [number, number, number],
+            isLatest: true
+        }
+    } catch (error) {
+        // Fallback (Poin 3): Mencegah bot crash jika internet/server WA bermasalah
+        return {
+            version: [2, 3000, 1015901307] as [number, number, number],
+            isLatest: false
+        }
+    }
 
 /**
  * A utility that fetches the latest web version of whatsapp.
