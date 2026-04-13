@@ -796,18 +796,19 @@ export const normalizeMessageContent = (content: WAMessageContent | null | undef
 	return content!
 
 	function getFutureProofMessage(message: typeof content) {
-		return (
-			message?.ephemeralMessage ||
-			message?.viewOnceMessage ||
-			message?.documentWithCaptionMessage ||
-			message?.viewOnceMessageV2 ||
-			message?.viewOnceMessageV2Extension ||
-			message?.editedMessage ||
-			message?.associatedChildMessage ||
-			message?.groupStatusMessage ||
-			message?.groupStatusMessageV2
-		)
-	}
+    return (
+        message?.ephemeralMessage?.message || // Bongkar pesan sementara
+        message?.viewOnceMessage?.message || // Bongkar View Once v1
+        message?.viewOnceMessageV2?.message || // Bongkar View Once v2
+        message?.viewOnceMessageV2Extension?.message || // Bongkar View Once v2 Ext
+        message?.documentWithCaptionMessage?.message ||
+        message?.editedMessage?.message || // Ambil isi pesan yang diedit
+        message?.associatedChildMessage ||
+        message?.groupStatusMessage ||
+        message?.groupStatusMessageV2
+    )
+}
+
 }
 
 /**
